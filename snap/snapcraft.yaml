@@ -1,0 +1,33 @@
+name: piqueserver
+base: core18 
+version: "1.0.0"
+summary: piqueserver
+description: |
+  An Ace of Spades 0.75 server based on PySnip
+
+grade: stable
+confinement: strict
+
+parts:
+  build-trigger:
+    source: https://github.com/piqueserver/piqueserver.git
+    plugin: nil
+  piqueserver:
+    plugin: python
+    python-packages: [piqueserver==1.0.0]
+    build-packages:
+      - build-essential
+    # override-build: |
+    #   snapcraftctl build
+    #   snapcraftctl set-version "$(pip3 show piqueserver | grep '^Version' | awk -F ' ' '{ print $2 }')"
+  launcher:
+    plugin: dump
+    source: snap/local
+
+apps:
+  piqueserver:
+    command: launcher
+    daemon: simple
+    plugs:
+      - network
+      - network-bind

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Check for config
+if [ ! -f "$SNAP_COMMON"/config.toml ]; then
+	echo "No config, copying defaults"
+	piqueserver --copy-config -d "$SNAP_COMMON"
+fi
+
+# # Check for maps
+# if [ ! -d "$SNAP_COMMON"/maps ]; then
+# 	echo "No maps, copying defaults"
+# 	mkdir -p "$SNAP_COMMON"/maps
+# 	cp -a "$SNAP"/lib/python3.6/site-packages/piqueserver/config/maps/* "$SNAP_COMMON"/maps
+# fi
+
+echo "Config: $SNAP_COMMON/config.toml"
+echo "Maps: $SNAP_COMMON/maps/"
+
+exec $SNAP/bin/piqueserver  -d "$SNAP_COMMON"
