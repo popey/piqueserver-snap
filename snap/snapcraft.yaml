@@ -1,6 +1,6 @@
 name: piqueserver
 base: core18 
-version: "1.0.0"
+version: "latest"
 summary: piqueserver
 description: |
   An Ace of Spades 0.75 server based on PySnip
@@ -14,7 +14,7 @@ parts:
     plugin: nil
   piqueserver:
     plugin: python
-    python-packages: [piqueserver==1.0.0]
+    python-packages: [piqueserver]
     build-packages:
       - build-essential
       - libffi-dev
