@@ -19,6 +19,7 @@ parts:
       - build-essential
       - libffi-dev
       - libssl-dev
+      - zlib1g-dev
     # override-build: |
     #   snapcraftctl build
     #   snapcraftctl set-version "$(pip3 show piqueserver | grep '^Version' | awk -F ' ' '{ print $2 }')"
