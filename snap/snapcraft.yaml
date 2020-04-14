@@ -9,9 +9,6 @@ grade: stable
 confinement: strict
 
 parts:
-  build-trigger:
-    source: https://github.com/piqueserver/piqueserver.git
-    plugin: nil
   piqueserver:
     plugin: python
     python-packages: [piqueserver]
@@ -21,9 +18,6 @@ parts:
       - libssl-dev
       - zlib1g-dev
       - libjpeg-dev
-    # override-build: |
-    #   snapcraftctl build
-    #   snapcraftctl set-version "$(pip3 show piqueserver | grep '^Version' | awk -F ' ' '{ print $2 }')"
   launcher:
     plugin: dump
     source: snap/local
