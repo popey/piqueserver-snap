@@ -31,7 +31,7 @@ parts:
 
 apps:
   piqueserver:
-    command: launcher
+    command: bin/launcher
     daemon: simple
     plugs:
       - network
