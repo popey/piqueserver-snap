@@ -4,7 +4,13 @@ adopt-info: piqueserver
 summary: piqueserver
 description: |
   An Ace of Spades 0.75 server based on PySnip
-
+architectures:
+  - build-on: amd64
+  - build-on: armhf
+  - build-on: i386
+  - build-on: arm64
+  - build-on: s390x
+  - build-on: ppc64el
 grade: stable
 confinement: strict
 
@@ -22,6 +28,8 @@ parts:
       - libssl-dev
       - zlib1g-dev
       - libjpeg-dev
+      - rustc
+      - cargo      
     # override-build: |
     #   snapcraftctl build
     #   snapcraftctl set-version "$(pip3 show piqueserver | grep '^Version' | awk -F ' ' '{ print $2 }')"
