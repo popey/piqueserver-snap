@@ -24,6 +24,7 @@ parts:
       snapcraftctl set-version "$(git rev-parse --short HEAD)"
     build-packages:
       - build-essential
+      - libenet-dev
       - libffi-dev
       - libssl-dev
       - zlib1g-dev
