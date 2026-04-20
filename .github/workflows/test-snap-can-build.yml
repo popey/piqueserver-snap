@@ -39,17 +39,22 @@ jobs:
           sudo snap restart piqueserver.piqueserver
           sleep 10
           sudo snap services piqueserver | tee snap-services.log
-          awk 'NR > 1 && $1 == "piqueserver.piqueserver" && $3 == "active" { found = 1 } END { exit found ? 0 : 1 }' snap-services.log
-          test -f /var/snap/piqueserver/common/config.toml
           sudo snap logs piqueserver.piqueserver --lines=100 | tee snap-service.log
+          test -f /var/snap/piqueserver/common/config.toml
           grep -q 'Config: /var/snap/piqueserver/common/config.toml' snap-service.log
+          awk 'NR > 1 && $1 == "piqueserver.piqueserver" && $3 == "active" { found = 1 } END { exit found ? 0 : 1 }' snap-services.log
 
       - name: Stop service
         if: ${{ always() }}
         run: sudo snap stop piqueserver.piqueserver
 
       - name: Upload artifacts
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: snap
-          path: ${{ steps.snapcraft.outputs.snap }}
+          if-no-files-found: ignore
+          name: snap-and-logs
+          path: |
+            ${{ steps.snapcraft.outputs.snap }}
+            snap-services.log
+            snap-service.log

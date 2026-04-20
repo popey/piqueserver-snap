@@ -38,6 +38,7 @@ parts:
       - libffi8
       - libjpeg8
       - libssl3t64
+      - python3
       - zlib1g
 
   launcher:
