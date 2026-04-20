@@ -21,6 +21,19 @@ parts:
     source-tag: v1.3.0
     override-pull: |
       craftctl default
+      python3 - <<'PY'
+      from pathlib import Path
+
+      fixes = {
+          Path("piqueserver/extensions.py"): "import importlib\nimport importlib.util\n",
+          Path("piqueserver/map.py"): "import importlib\nimport importlib.util\n",
+      }
+
+      for path, replacement in fixes.items():
+          text = path.read_text()
+          text = text.replace("import importlib\n", replacement, 1)
+          path.write_text(text)
+      PY
       version="$(git describe --tags --abbrev=0)"
       craftctl set version="${version#v}"
     build-packages:
