@@ -2,9 +2,9 @@ name: 🧪 Test snap can be built
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -31,8 +31,35 @@ jobs:
           snap: ${{ steps.snapcraft.outputs.snap }}
           isClassic: 'false'
 
+      - name: Install snap
+        run: sudo snap install --dangerous "${{ steps.snapcraft.outputs.snap }}"
+
+      - name: Smoke test service startup
+        run: |
+          sudo snap restart piqueserver.piqueserver
+          sleep 10
+          sudo snap services piqueserver | tee snap-services.log
+          sudo snap logs -n=100 piqueserver.piqueserver | tee snap-service.log
+          test -f /var/snap/piqueserver/common/config.toml
+          grep -q 'Config: /var/snap/piqueserver/common/config.toml' snap-service.log
+          awk 'NR > 1 && $1 == "piqueserver.piqueserver" && $3 == "active" { found = 1 } END { exit found ? 0 : 1 }' snap-services.log
+
+      - name: Stop service
+        if: ${{ always() }}
+        run: |
+          if sudo snap services piqueserver 2>/dev/null | awk 'NR > 1 && $1 == "piqueserver.piqueserver" { found = 1 } END { exit found ? 0 : 1 }'; then
+            sudo snap stop piqueserver.piqueserver
+          else
+            echo "piqueserver.piqueserver service not present; skipping stop"
+          fi
+
       - name: Upload artifacts
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: snap
-          path: ${{ steps.snapcraft.outputs.snap }}
+          if-no-files-found: ignore
+          name: snap-and-logs
+          path: |
+            ${{ steps.snapcraft.outputs.snap }}
+            snap-services.log
+            snap-service.log
