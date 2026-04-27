@@ -46,7 +46,12 @@ jobs:
 
       - name: Stop service
         if: ${{ always() }}
-        run: sudo snap stop piqueserver.piqueserver
+        run: |
+          if sudo snap services piqueserver 2>/dev/null | awk 'NR > 1 && $1 == "piqueserver.piqueserver" { found = 1 } END { exit found ? 0 : 1 }'; then
+            sudo snap stop piqueserver.piqueserver
+          else
+            echo "piqueserver.piqueserver service not present; skipping stop"
+          fi
 
       - name: Upload artifacts
         if: ${{ always() }}
