@@ -18,7 +18,7 @@ parts:
   piqueserver:
     plugin: python
     source: https://github.com/piqueserver/piqueserver.git
-    source-tag: v1.3.0
+    source-tag: v1.4.1
     override-pull: |
       craftctl default
       python3 - <<'PY'
