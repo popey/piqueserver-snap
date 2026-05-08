@@ -1,0 +1,76 @@
+name: 🔄 Sync version with upstream
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get latest version from upstream
+        id: latest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST_TAG=$(gh release view --repo piqueserver/piqueserver --json tagName -q '.tagName')
+          if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
+            echo "::error::Failed to fetch latest version from GitHub API"
+            exit 1
+          fi
+          echo "tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
+          echo "Latest upstream version: $LATEST_TAG"
+
+      - name: Get current version from snapcraft.yaml
+        id: current
+        run: |
+          CURRENT_TAG=$(sed -n "s/^ *source-tag: *['\"]\{0,1\}\([^'\"]*\)['\"]\{0,1\}$/\1/p" snap/snapcraft.yaml | head -1)
+          if [ -z "$CURRENT_TAG" ]; then
+            echo "::error::Failed to read source-tag from snap/snapcraft.yaml"
+            exit 1
+          fi
+          echo "tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
+          echo "Current snap source-tag: $CURRENT_TAG"
+
+      - name: Compare versions
+        id: compare
+        run: |
+          if [ "${{ steps.latest.outputs.tag }}" != "${{ steps.current.outputs.tag }}" ]; then
+            echo "needs_update=true" >> "$GITHUB_OUTPUT"
+            echo "Version mismatch - update needed"
+          else
+            echo "needs_update=false" >> "$GITHUB_OUTPUT"
+            echo "Versions match - no update needed"
+          fi
+
+      - name: Update snapcraft.yaml
+        if: steps.compare.outputs.needs_update == 'true'
+        run: |
+          sed -i "s/^\\( *source-tag: *\\).*/\\1${{ steps.latest.outputs.tag }}/" snap/snapcraft.yaml
+
+      - name: Create Pull Request
+        if: steps.compare.outputs.needs_update == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update to ${{ steps.latest.outputs.tag }}"
+          title: "Update to ${{ steps.latest.outputs.tag }}"
+          body: |
+            Automated version update from upstream.
+
+            - Previous: `${{ steps.current.outputs.tag }}`
+            - New: `${{ steps.latest.outputs.tag }}`
+
+            [Upstream release](https://github.com/piqueserver/piqueserver/releases/tag/${{ steps.latest.outputs.tag }})
+          branch: auto-update-${{ steps.latest.outputs.tag }}
+          delete-branch: true
