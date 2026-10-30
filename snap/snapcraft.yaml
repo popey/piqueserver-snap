@@ -33,6 +33,16 @@ parts:
           text = path.read_text()
           text = text.replace("import importlib\n", replacement, 1)
           path.write_text(text)
+
+      # Cython 3 rejects the unused float-to-int alpha assignment. This
+      # function returns RGB only, so removing that assignment preserves output.
+      path = Path("pyspades/vxl.pyx")
+      text = path.read_text()
+      unused_alpha = "    a = (((color & 0xFF000000) >> 24) / 128.0) * 255\n"
+      if unused_alpha in text:
+          assert text.count(unused_alpha) == 1
+          assert "    return (r, g, b)" in text
+          path.write_text(text.replace(unused_alpha, "", 1))
       PY
     build-packages:
       - build-essential
