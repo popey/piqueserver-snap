@@ -1,6 +1,6 @@
 name: piqueserver
 base: core24
-adopt-info: piqueserver
+version: '1.4.2'
 summary: Ace of Spades 0.75 server
 description: |
   Piqueserver is an Ace of Spades 0.75 server based on PySnip.
@@ -34,8 +34,6 @@ parts:
           text = text.replace("import importlib\n", replacement, 1)
           path.write_text(text)
       PY
-      version="$(git describe --tags --abbrev=0)"
-      craftctl set version="${version#v}"
     build-packages:
       - build-essential
       - cargo

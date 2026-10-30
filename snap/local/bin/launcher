@@ -9,4 +9,4 @@ fi
 echo "Config: $SNAP_COMMON/config.toml"
 echo "Maps: $SNAP_COMMON/maps/"
 
-exec "$SNAP/bin/piqueserver" -d "$SNAP_COMMON"
+exec "$SNAP/bin/piqueserver" -d "$SNAP_COMMON" "$@"
