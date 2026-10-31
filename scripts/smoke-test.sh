@@ -3,6 +3,15 @@
 set -euo pipefail
 mkdir -p artifacts
 timeout 30 snap run piqueserver --version | tee artifacts/snap-version.log
+python3 - <<'PY'
+from pathlib import Path
+import re
+
+recipe = Path('snap/snapcraft.yaml').read_text()
+expected = re.search(r"(?m)^version: '([^']+)'$", recipe).group(1)
+reported = Path('artifacts/snap-version.log').read_text().strip()
+assert reported == 'piqueserver ' + expected, (expected, reported)
+PY
 sudo -n snap restart piqueserver.piqueserver
 sleep 10
 sudo -n snap services piqueserver | tee artifacts/snap-services.log
