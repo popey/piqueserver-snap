@@ -2,6 +2,7 @@ name: 🧪 Test snap can be built
 
 on:
   push:
+    branches: [ main ]
   pull_request:
     branches:
       - main
@@ -14,6 +15,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Test coupled release version updates
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
 
       - name: Build snap
         uses: snapcore/action-build@v1
@@ -35,14 +39,7 @@ jobs:
         run: sudo snap install --dangerous "${{ steps.snapcraft.outputs.snap }}"
 
       - name: Smoke test service startup
-        run: |
-          sudo snap restart piqueserver.piqueserver
-          sleep 10
-          sudo snap services piqueserver | tee snap-services.log
-          sudo snap logs -n=100 piqueserver.piqueserver | tee snap-service.log
-          test -f /var/snap/piqueserver/common/config.toml
-          grep -q 'Config: /var/snap/piqueserver/common/config.toml' snap-service.log
-          awk 'NR > 1 && $1 == "piqueserver.piqueserver" && $3 == "active" { found = 1 } END { exit found ? 0 : 1 }' snap-services.log
+        run: ./scripts/smoke-test.sh
 
       - name: Stop service
         if: ${{ always() }}
@@ -61,5 +58,6 @@ jobs:
           name: snap-and-logs
           path: |
             ${{ steps.snapcraft.outputs.snap }}
-            snap-services.log
-            snap-service.log
+            artifacts/snap-version.log
+            artifacts/snap-services.log
+            artifacts/snap-service.log

@@ -1,6 +1,14 @@
 #!/bin/sh
 set -eu
 
+# Informational commands must work for ordinary users without writing the
+# root-owned service configuration (or racing the first daemon startup).
+for arg in "$@"; do
+    case "$arg" in
+        --version|--help|-h) exec "$SNAP/bin/piqueserver" "$@" ;;
+    esac
+done
+
 if [ ! -f "$SNAP_COMMON/config.toml" ]; then
     echo "No config found, copying defaults into $SNAP_COMMON"
     "$SNAP/bin/piqueserver" --copy-config -d "$SNAP_COMMON"
@@ -9,4 +17,4 @@ fi
 echo "Config: $SNAP_COMMON/config.toml"
 echo "Maps: $SNAP_COMMON/maps/"
 
-exec "$SNAP/bin/piqueserver" -d "$SNAP_COMMON"
+exec "$SNAP/bin/piqueserver" -d "$SNAP_COMMON" "$@"
