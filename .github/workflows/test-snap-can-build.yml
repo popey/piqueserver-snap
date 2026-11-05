@@ -16,6 +16,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Test coupled release version updates
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+
       - name: Build snap
         uses: snapcore/action-build@v1
         id: snapcraft

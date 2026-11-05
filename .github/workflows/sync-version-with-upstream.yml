@@ -29,6 +29,7 @@ jobs:
             exit 1
           fi
           echo "tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${LATEST_TAG#v}" >> "$GITHUB_OUTPUT"
           echo "Latest upstream version: $LATEST_TAG"
 
       - name: Get current version from snapcraft.yaml
@@ -41,6 +42,7 @@ jobs:
           fi
           echo "tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
           echo "Current snap source-tag: $CURRENT_TAG"
+          python3 scripts/update-version.py --check "$CURRENT_TAG"
 
       - name: Compare versions
         id: compare
@@ -55,8 +57,10 @@ jobs:
 
       - name: Update snapcraft.yaml
         if: steps.compare.outputs.needs_update == 'true'
+        env:
+          RELEASE_TAG: ${{ steps.latest.outputs.tag }}
         run: |
-          sed -i "s/^\\( *source-tag: *\\).*/\\1${{ steps.latest.outputs.tag }}/" snap/snapcraft.yaml
+          python3 scripts/update-version.py "$RELEASE_TAG"
 
       - name: Create Pull Request
         if: steps.compare.outputs.needs_update == 'true'
@@ -72,5 +76,5 @@ jobs:
             - New: `${{ steps.latest.outputs.tag }}`
 
             [Upstream release](https://github.com/piqueserver/piqueserver/releases/tag/${{ steps.latest.outputs.tag }})
-          branch: auto-update-${{ steps.latest.outputs.tag }}
+          branch: auto-update-${{ steps.latest.outputs.version }}
           delete-branch: true
